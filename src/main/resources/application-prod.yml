@@ -1,0 +1,47 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:school_db}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate: {}
+
+  flyway:
+    enabled: true
+    # PROD: schema migrations only. NEVER add db/seed here — it would
+    # insert demo users/tenants into production.
+    locations: classpath:db/migration
+    schemas: public
+    baseline-on-migrate: false
+
+logging:
+  level:
+    root: WARN
+    com.schoolSys.schooolSys: INFO
+    org.flywaydb: INFO
+
+server:
+  error:
+    include-stacktrace: never
+
+# CORS — restrict to your actual frontend domain
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://your-domain.com}
+  tenant:
+    # PROD: schema migrations only — no demo/seed data in tenant schemas
+    flyway-locations: classpath:db/tenant-migration
+
+# Swagger — disable in prod
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
