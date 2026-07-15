@@ -1,30 +1,26 @@
 package com.schoolSys.schooolSys.student;
 
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.storage.FileInfo;
+import com.schoolSys.schooolSys.storage.StorageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DocumentService {
 
     private final DocumentEleveRepository documentRepository;
     private final StudentRepository studentRepository;
-
-    @Value("${app.upload-dir:uploads/}")
-    private String uploadDir;
+    private final StorageService storageService;
 
     @Transactional
     public DocumentEleve upload(UUID studentId, MultipartFile file, DocumentEleve.DocumentType type) {
@@ -32,34 +28,18 @@ public class DocumentService {
             throw new ResourceNotFoundException("Student", studentId);
         }
 
-        try {
-            Path dir = Paths.get(uploadDir, "students", String.valueOf(studentId));
-            Files.createDirectories(dir);
+        FileInfo info = storageService.store(file, "students/" + studentId);
 
-            String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "file";
-            String extension = "";
-            int dotIndex = originalName.lastIndexOf('.');
-            if (dotIndex > 0) {
-                extension = originalName.substring(dotIndex);
-            }
-            String storedName = UUID.randomUUID() + extension;
+        DocumentEleve doc = DocumentEleve.builder()
+                .studentId(studentId)
+                .type(type)
+                .fileName(info.getOriginalName())
+                .filePath(info.getFilePath())
+                .contentType(file.getContentType())
+                .uploadedAt(LocalDateTime.now())
+                .build();
 
-            Path filePath = dir.resolve(storedName);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            DocumentEleve doc = DocumentEleve.builder()
-                    .studentId(studentId)
-                    .type(type)
-                    .fileName(originalName)
-                    .filePath(filePath.toString())
-                    .contentType(file.getContentType())
-                    .uploadedAt(LocalDateTime.now())
-                    .build();
-
-            return documentRepository.save(doc);
-        } catch (IOException e) {
-            throw new RuntimeException("Erreur lors de l'upload du fichier", e);
-        }
+        return documentRepository.save(doc);
     }
 
     @Transactional(readOnly = true)
@@ -79,12 +59,16 @@ public class DocumentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Document", docId));
 
         try {
-            Path path = Paths.get(doc.getFilePath());
-            Files.deleteIfExists(path);
-        } catch (IOException e) {
-            // Log but don't fail if file is already missing
+            storageService.delete(doc.getFilePath());
+        } catch (Exception e) {
+            log.warn("Impossible de supprimer le fichier {}: {}", doc.getFilePath(), e.getMessage());
         }
 
         documentRepository.deleteById(docId);
+    }
+
+    public byte[] downloadContent(UUID docId) {
+        DocumentEleve doc = findById(docId);
+        return storageService.load(doc.getFilePath());
     }
 }

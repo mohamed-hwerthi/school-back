@@ -12,7 +12,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -24,9 +23,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -133,10 +129,10 @@ public class StudentController {
 
     @GetMapping("/documents/{docId}/download")
     @PreAuthorize("hasAuthority('READ_STUDENTS')")
-    public ResponseEntity<Resource> downloadDocument(@PathVariable UUID docId) throws IOException {
+    public ResponseEntity<Resource> downloadDocument(@PathVariable UUID docId) {
         DocumentEleve doc = documentService.findById(docId);
-        Path path = Paths.get(doc.getFilePath());
-        Resource resource = new UrlResource(path.toUri());
+        byte[] content = documentService.downloadContent(docId);
+        ByteArrayResource resource = new ByteArrayResource(content);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(

@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:school_db}
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:school_db}
     driver-class-name: org.postgresql.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
@@ -15,13 +15,32 @@ spring:
 
   flyway:
     enabled: true
-    # PROD: schema migrations only. NEVER add db/seed here — it would
-    # insert demo users/tenants into production.
     locations: classpath:db/migration
     schemas: public
     baseline-on-migrate: false
 
+  mail:
+    enabled: ${MAIL_ENABLED:true}
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:learnupadmin@gmail.com}
+    password: ${SMTP_PASSWORD:bsjhuacvumanybys}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
 logging:
+  file:
+    name: logs/backend.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n%ex"
+  logback:
+    rollingpolicy:
+      file-name-pattern: logs/backend-%d{yyyy-MM-dd}.%i.log
+      max-file-size: 50MB
+      max-history: 14
+      total-size-cap: 1GB
+      clean-history-on-start: false
   level:
     root: WARN
     com.schoolSys.schooolSys: INFO
@@ -31,15 +50,25 @@ server:
   error:
     include-stacktrace: never
 
-# CORS — restrict to your actual frontend domain
 app:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:900000}
+    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://your-domain.com}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://schooly.learnup.tn}
   tenant:
-    # PROD: schema migrations only — no demo/seed data in tenant schemas
     flyway-locations: classpath:db/tenant-migration
 
-# Swagger — disable in prod
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
 springdoc:
   api-docs:
     enabled: false

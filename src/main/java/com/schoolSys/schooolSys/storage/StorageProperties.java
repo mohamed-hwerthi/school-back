@@ -28,6 +28,9 @@ public class StorageProperties {
     /** S3 endpoint (for MinIO compatibility). */
     private String s3Endpoint = "";
 
+    /** Public S3 URL for browser-accessible presigned URLs (e.g. http://localhost:9000 in Docker). */
+    private String s3PublicUrl = "";
+
     /** S3 access key. */
     private String s3AccessKey = "";
 

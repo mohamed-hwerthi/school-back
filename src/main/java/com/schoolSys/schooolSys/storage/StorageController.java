@@ -10,10 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +22,6 @@ import java.util.List;
 public class StorageController {
 
     private final StorageService storageService;
-    private final StorageProperties storageProperties;
 
     /**
      * Upload a single file.
@@ -59,24 +54,32 @@ public class StorageController {
 
     /**
      * Download / serve a file.
+     * In production, redirects to a direct URL (presigned for S3, local proxy fallback).
      * GET /api/files/{*filePath}
      */
     @GetMapping("/{*filePath}")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable String filePath) {
-        // Strip leading slash added by Spring's {*path} capture
+    public ResponseEntity<?> downloadFile(@PathVariable String filePath) {
         if (filePath.startsWith("/")) {
             filePath = filePath.substring(1);
         }
-        byte[] content = storageService.load(filePath);
 
-        // Detect content type from extension
-        String contentType = detectContentType(filePath);
+        String directUrl = storageService.generateDirectUrl(filePath);
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + extractFileName(filePath) + "\"")
-                .body(content);
+        // If the storage returns a same-host proxy URL, serve bytes directly
+        if (directUrl.startsWith("/api/files/")) {
+            byte[] content = storageService.load(filePath);
+            String contentType = detectContentType(filePath);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "inline; filename=\"" + extractFileName(filePath) + "\"")
+                    .body(content);
+        }
+
+        // Redirect to the direct URL (presigned MinIO URL or external storage)
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, directUrl)
+                .build();
     }
 
     /**
@@ -97,28 +100,18 @@ public class StorageController {
     @GetMapping("/info")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<FileInfo>> getFileInfo(@RequestParam("path") String filePath) {
-        Path path = Paths.get(storageProperties.getLocalPath()).resolve(filePath).normalize();
-        if (!Files.exists(path)) {
-            throw new StorageException("Fichier non trouvé: " + filePath);
-        }
-
-        try {
-            String originalName = extractFileName(filePath);
-            FileInfo info = FileInfo.builder()
-                    .fileName(extractFileName(filePath))
-                    .originalName(originalName.contains("_")
-                            ? originalName.substring(originalName.indexOf('_') + 1)
-                            : originalName)
-                    .filePath(filePath)
-                    .fileUrl(storageService.getUrl(filePath))
-                    .contentType(detectContentType(filePath))
-                    .size(Files.size(path))
-                    .uploadedAt(LocalDateTime.now())
-                    .build();
-            return ResponseEntity.ok(ApiResponse.ok(info));
-        } catch (Exception e) {
-            throw new StorageException("Impossible de lire les métadonnées: " + filePath, e);
-        }
+        String fileName = extractFileName(filePath);
+        String originalName = fileName.contains("_")
+                ? fileName.substring(fileName.indexOf('_') + 1)
+                : fileName;
+        FileInfo info = FileInfo.builder()
+                .fileName(fileName)
+                .originalName(originalName)
+                .filePath(filePath)
+                .fileUrl(storageService.getUrl(filePath))
+                .contentType(detectContentType(filePath))
+                .build();
+        return ResponseEntity.ok(ApiResponse.ok(info));
     }
 
     // ── Private helpers ──────────────────────────────────────────────

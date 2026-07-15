@@ -15,7 +15,7 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 RUN addgroup -S spring && adduser -S spring -G spring
 COPY --from=build /app/target/*.jar app.jar
-RUN mkdir -p /app/uploads && chown -R spring:spring /app
+RUN chown -R spring:spring /app
 USER spring
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:8080/api/system/health || exit 1

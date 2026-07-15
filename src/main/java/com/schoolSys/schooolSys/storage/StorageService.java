@@ -39,4 +39,15 @@ public interface StorageService {
      * @return the URL string
      */
     String getUrl(String filePath);
+
+    /**
+     * Generates a time-limited direct URL for efficient file serving.
+     * Default implementation falls back to the proxy URL.
+     *
+     * @param filePath the relative path within storage
+     * @return a direct/download URL string (may be temporary)
+     */
+    default String generateDirectUrl(String filePath) {
+        return getUrl(filePath);
+    }
 }
