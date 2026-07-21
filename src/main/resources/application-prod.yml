@@ -19,6 +19,8 @@ spring:
     schemas: public
     baseline-on-migrate: false
 
+
+
   mail:
     enabled: ${MAIL_ENABLED:true}
     host: ${SMTP_HOST:smtp.gmail.com}
