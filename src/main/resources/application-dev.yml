@@ -25,11 +25,9 @@ spring:
     baseline-on-migrate: true
 
   mail:
-    # En dev on utilise le même compte Gmail que le projet sœur easyLearn
-    # (fallback hardcodé dans application.yml). Override possible via env :
-    # MAIL_ENABLED=false pour repasser en mode silencieux,
-    # SMTP_HOST=localhost SMTP_PORT=1025 pour Mailpit en local.
-    enabled: ${MAIL_ENABLED:true}
+    # Dev: emails loggés dans la console au lieu d'être envoyés.
+    # MAIL_ENABLED=true pour réactiver l'envoi via Gmail.
+    enabled: ${MAIL_ENABLED:false}
     host: ${SMTP_HOST:smtp.gmail.com}
     port: ${SMTP_PORT:587}
     username: ${SMTP_USERNAME:learnupadmin@gmail.com}

@@ -56,6 +56,7 @@ public class TenantFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         return path.startsWith("/api/tenants")
                 || path.startsWith("/api/public")
+                || path.startsWith("/api/auth")
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/actuator");

@@ -86,7 +86,7 @@ public class EmailService {
             helper.setText(htmlBody, true);
             mailSender.send(message);
             log.info("Email envoye avec succes a: {} (sujet: {})", to, subject);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("Erreur lors de l'envoi de l'email a {}: {}", to, e.getMessage(), e);
         }
     }
