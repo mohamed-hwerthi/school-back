@@ -3,6 +3,8 @@ package com.schoolSys.schooolSys.tenant;
 import java.util.UUID;
 
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
+import com.schoolSys.schooolSys.sms.SchoolSmsCredit;
+import com.schoolSys.schooolSys.sms.SmsCreditService;
 import com.schoolSys.schooolSys.tenant.dto.SuperAdminDashboardDTO;
 import com.schoolSys.schooolSys.tenant.dto.TenantResponseDTO;
 import com.schoolSys.schooolSys.tenant.dto.TenantUsageDTO;
@@ -22,6 +24,7 @@ public class SuperAdminService {
     private final TenantRepository tenantRepository;
     private final TenantMapper tenantMapper;
     private final TenantBillingService tenantBillingService;
+    private final SmsCreditService smsCreditService;
 
     public SuperAdminDashboardDTO getDashboard() {
         List<Tenant> tenants = tenantRepository.findAll();
@@ -51,8 +54,21 @@ public class SuperAdminService {
 
     public List<TenantResponseDTO> getAllTenants() {
         return tenantRepository.findAll().stream()
-                .map(tenantMapper::toResponseDTO)
+                .map(this::toResponseDTOWithCredits)
                 .toList();
+    }
+
+    private TenantResponseDTO toResponseDTOWithCredits(Tenant tenant) {
+        TenantResponseDTO dto = tenantMapper.toResponseDTO(tenant);
+        try {
+            SchoolSmsCredit credits = smsCreditService.getCredits(tenant.getSchemaName());
+            dto.setSmsCredits(credits.getTotalCredits());
+            dto.setSmsCreditsUsed(credits.getUsedCredits());
+        } catch (Exception e) {
+            dto.setSmsCredits(0);
+            dto.setSmsCreditsUsed(0);
+        }
+        return dto;
     }
 
     public TenantUsageDTO getTenantUsage(UUID tenantId) {

@@ -31,4 +31,7 @@ public class TenantRequestDTO {
 
     /** Initial password for the auto-created school ADMIN (required if adminEmail is set). */
     private String adminPassword;
+
+    /** Initial SMS credit quota allocated to this school. */
+    private Integer smsCredits;
 }

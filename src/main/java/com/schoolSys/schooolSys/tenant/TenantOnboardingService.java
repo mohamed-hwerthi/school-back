@@ -4,6 +4,7 @@ import com.schoolSys.schooolSys.auth.User;
 import com.schoolSys.schooolSys.auth.UserRepository;
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.multitenancy.TenantFlywayConfig;
+import com.schoolSys.schooolSys.sms.SmsCreditService;
 import com.schoolSys.schooolSys.tenant.dto.TenantOnboardingRequest;
 import com.schoolSys.schooolSys.tenant.dto.TenantResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class TenantOnboardingService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
+    private final SmsCreditService smsCreditService;
 
     private static final Map<String, PlanDefaults> PLAN_DEFAULTS = Map.of(
             "FREE", new PlanDefaults(50, 10, 500, BigDecimal.ZERO),
@@ -100,7 +102,11 @@ public class TenantOnboardingService {
                 .build();
 
         Tenant saved = tenantRepository.save(tenant);
-        log.info("Onboarded new tenant: {} (schema: {}, plan: {})", saved.getName(), schemaName, plan);
+
+        int smsCredits = request.getSmsCredits() != null ? request.getSmsCredits() : 0;
+        smsCreditService.initializeCredits(schemaName, smsCredits);
+
+        log.info("Onboarded new tenant: {} (schema: {}, plan: {}, smsCredits: {})", saved.getName(), schemaName, plan, smsCredits);
 
         User admin = User.builder()
                 .email(request.getAdminEmail())

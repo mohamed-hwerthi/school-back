@@ -33,4 +33,6 @@ public class TenantResponseDTO {
     private BigDecimal monthlyRate;
     private LocalDate trialEndsAt;
     private Boolean onboardingCompleted;
+    private Integer smsCredits;
+    private Integer smsCreditsUsed;
 }

@@ -55,7 +55,7 @@ public class Personnel {
     @Column(columnDefinition = "DATE DEFAULT CURRENT_DATE")
     private LocalDate dateEmbauche;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'Actif'")
+    @Column(nullable = false, columnDefinition = "VARCHAR(20)")
     private String statut;
 
     @PrePersist

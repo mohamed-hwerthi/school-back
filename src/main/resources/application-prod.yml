@@ -58,7 +58,7 @@ app:
     access-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:900000}
     refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://schooly.learnup.tn}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://schooly.learnup.tn,https://*.learnup.tn}
   tenant:
     flyway-locations: classpath:db/tenant-migration
 

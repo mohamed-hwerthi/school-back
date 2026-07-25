@@ -9,6 +9,8 @@ services:
     restart: unless-stopped
     networks:
       - lingua-network
+    volumes:
+      - ./logs:/app/logs
     environment:
       SPRING_PROFILES_ACTIVE: prod
       DB_HOST: postgres
@@ -33,9 +35,9 @@ services:
       SMTP_USERNAME: ${SMTP_USERNAME}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       AI_ENABLED: ${AI_ENABLED:-false}
-      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
-      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
-      TWILIO_FROM_NUMBER: ${TWILIO_FROM_NUMBER:-}
+      WINSMS_API_KEY: ${WINSMS_API_KEY:-}
+      WINSMS_BASE_URL: ${WINSMS_BASE_URL:-https://www.winsms.com/api/v1}
+      WINSMS_SENDER_NAME: ${WINSMS_SENDER_NAME:-SCHOOL}
 
   schooly-front:
     build:

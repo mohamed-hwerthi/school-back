@@ -7,6 +7,8 @@ import com.schoolSys.schooolSys.auth.UserRepository;
 import com.schoolSys.schooolSys.auth.UserRole;
 import com.schoolSys.schooolSys.common.exception.ResourceNotFoundException;
 import com.schoolSys.schooolSys.common.multitenancy.TenantFlywayConfig;
+import com.schoolSys.schooolSys.sms.SchoolSmsCredit;
+import com.schoolSys.schooolSys.sms.SmsCreditService;
 import com.schoolSys.schooolSys.tenant.dto.PublicSchoolDTO;
 import com.schoolSys.schooolSys.tenant.dto.TenantRequestDTO;
 import com.schoolSys.schooolSys.tenant.dto.TenantResponseDTO;
@@ -44,6 +46,7 @@ public class TenantService {
     private final TenantFlywayConfig tenantFlywayConfig;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SmsCreditService smsCreditService;
 
     /**
      * Returns all registered tenants.
@@ -52,8 +55,21 @@ public class TenantService {
      */
     public List<TenantResponseDTO> findAll() {
         return tenantRepository.findAll().stream()
-                .map(tenantMapper::toResponseDTO)
+                .map(this::toResponseDTOWithCredits)
                 .toList();
+    }
+
+    private TenantResponseDTO toResponseDTOWithCredits(Tenant tenant) {
+        TenantResponseDTO dto = tenantMapper.toResponseDTO(tenant);
+        try {
+            SchoolSmsCredit credits = smsCreditService.getCredits(tenant.getSchemaName());
+            dto.setSmsCredits(credits.getTotalCredits());
+            dto.setSmsCreditsUsed(credits.getUsedCredits());
+        } catch (Exception e) {
+            dto.setSmsCredits(0);
+            dto.setSmsCreditsUsed(0);
+        }
+        return dto;
     }
 
     /**
@@ -85,7 +101,7 @@ public class TenantService {
     public TenantResponseDTO findById(UUID id) {
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", id));
-        return tenantMapper.toResponseDTO(tenant);
+        return toResponseDTOWithCredits(tenant);
     }
 
     /**
@@ -135,6 +151,9 @@ public class TenantService {
 
         Tenant saved = tenantRepository.save(tenant);
 
+        int smsCredits = dto.getSmsCredits() != null ? dto.getSmsCredits() : 0;
+        smsCreditService.initializeCredits(schemaName, smsCredits);
+
         // Auto-create the school's first ADMIN so the school can be managed right away.
         // That ADMIN then creates the DIRECTEUR / ENSEIGNANT / PARENT accounts.
         if (createAdmin) {
@@ -150,7 +169,7 @@ public class TenantService {
             log.info("Auto-created ADMIN account '{}' for tenant '{}'", adminEmail, schemaName);
         }
 
-        return tenantMapper.toResponseDTO(saved);
+        return toResponseDTOWithCredits(saved);
     }
 
     /**
@@ -194,7 +213,7 @@ public class TenantService {
                 .orElseThrow(() -> new ResourceNotFoundException("Tenant", id));
         tenant.setName(dto.getName());
         tenant.setContactEmail(dto.getContactEmail());
-        return tenantMapper.toResponseDTO(tenantRepository.save(tenant));
+        return toResponseDTOWithCredits(tenantRepository.save(tenant));
     }
 
     /**
