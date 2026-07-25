@@ -23,12 +23,14 @@ public class CircuitService {
     private final ArretRepository arretRepository;
     private final AffectationTransportRepository affectationRepository;
 
+    @Transactional(readOnly = true)
     public List<CircuitDTO> getAll() {
         return circuitRepository.findAllWithVehicule().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public CircuitDTO getById(UUID id) {
         Circuit circuit = circuitRepository.findByIdWithDetails(id);
         if (circuit == null) {

@@ -17,6 +17,6 @@ public interface CircuitRepository extends JpaRepository<Circuit, UUID> {
     @Query("SELECT c FROM Circuit c LEFT JOIN FETCH c.vehicule LEFT JOIN FETCH c.arrets WHERE c.id = :id")
     Circuit findByIdWithDetails(@Param("id") UUID id);
 
-    @Query("SELECT c FROM Circuit c LEFT JOIN FETCH c.vehicule")
+    @Query("SELECT DISTINCT c FROM Circuit c LEFT JOIN FETCH c.vehicule LEFT JOIN FETCH c.arrets")
     List<Circuit> findAllWithVehicule();
 }

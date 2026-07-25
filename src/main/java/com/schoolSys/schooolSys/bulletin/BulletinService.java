@@ -68,14 +68,20 @@ public class BulletinService {
             return Collections.emptyList();
         }
 
-        // 2. Fetch domaines for this niveau
-        List<Domaine> domaines = domaineRepository.findByNiveauIdOrderByOrdreAsc(niveauId);
+        // 2. Fetch domaines for this niveau, filtered by version
+        List<Domaine> domaines = domaineRepository.findByNiveauIdOrderByOrdreAsc(niveauId)
+                .stream()
+                .filter(d -> prive ? d.getVersionPrivee() : d.getVersionEtatique())
+                .toList();
         Map<UUID, Domaine> domaineMap = domaines.stream()
                 .collect(Collectors.toMap(Domaine::getId, d -> d));
 
         // 2bis. Fetch ALL modules of the niveau (so the bulletin shows them
-        // even when the student has no notes for some of them).
-        List<Module> niveauModules = moduleRepository.findByNiveauIdOrderByOrdreEtatiqueAsc(niveauId);
+        // even when the student has no notes for some of them), filtered by version.
+        List<Module> niveauModules = moduleRepository.findByNiveauIdOrderByOrdreEtatiqueAsc(niveauId)
+                .stream()
+                .filter(m -> prive ? m.getVersionPrivee() : m.getVersionEtatique())
+                .toList();
 
         // 3. Group notes by student
         Map<UUID, List<Note>> notesByStudent = allNotes.stream()
