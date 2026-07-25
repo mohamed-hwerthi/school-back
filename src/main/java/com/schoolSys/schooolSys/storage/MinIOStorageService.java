@@ -37,6 +37,7 @@ public class MinIOStorageService implements StorageService {
                 .credentials(properties.getS3AccessKey(), properties.getS3SecretKey())
                 .build();
 
+
         try {
             boolean exists = minioClient.bucketExists(
                     BucketExistsArgs.builder().bucket(properties.getS3Bucket()).build()
