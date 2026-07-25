@@ -28,7 +28,6 @@ services:
       JWT_ACCESS_EXPIRATION_MS: ${JWT_ACCESS_EXPIRATION_MS:-900000}
       JWT_REFRESH_EXPIRATION_MS: ${JWT_REFRESH_EXPIRATION_MS:-604800000}
       FRONTEND_URL: https://schooly.learnup.tn
-      CORS_ALLOWED_ORIGINS: https://schooly.learnup.tn
       MAIL_ENABLED: ${MAIL_ENABLED:-true}
       SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
       SMTP_PORT: ${SMTP_PORT:-587}
