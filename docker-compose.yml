@@ -43,8 +43,8 @@ services:
     container_name: schooly-front
     restart: unless-stopped
     networks:
-      - lingua-network
+      - lingua_lingua-network
 
 networks:
-  lingua-network:
+  lingua_lingua-network:
     external: true
