@@ -19,8 +19,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/school_dev_db
     user: ${DB_USERNAME:med}
     password: ${DB_PASSWORD:med}
-    # dev: schema + demo seed (db/seed). Prod uses db/migration only.
-    locations: classpath:db/migration,classpath:db/seed
+    # Dump loaded — seeds already included in data, kept fresh-DB only.
+    locations: classpath:db/migration
     schemas: public
     baseline-on-migrate: true
 

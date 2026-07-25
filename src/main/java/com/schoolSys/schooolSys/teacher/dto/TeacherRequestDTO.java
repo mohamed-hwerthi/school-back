@@ -15,7 +15,6 @@ public class TeacherRequestDTO {
 
     private String email;
 
-    @NotBlank(message = "La spécialité est requise")
     private String specialization;
 
     @Pattern(regexp = "^[MF]$", message = "Le sexe doit être M ou F")

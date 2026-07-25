@@ -42,7 +42,7 @@ public class StorageProperties {
 
     /** List of allowed file extensions. */
     private List<String> allowedExtensions = List.of(
-            "pdf", "jpg", "jpeg", "png", "gif",
+            "pdf", "jpg", "jpeg", "png", "gif", "avif",
             "doc", "docx", "xls", "xlsx",
             "mp4", "mp3"
     );
