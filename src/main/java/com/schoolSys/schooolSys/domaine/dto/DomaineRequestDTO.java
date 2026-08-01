@@ -22,6 +22,12 @@ public class DomaineRequestDTO {
     private Integer ordre = 1;
 
     @Builder.Default
+    private Integer ordreEtatique = 1;
+
+    @Builder.Default
+    private Integer ordrePrive = 1;
+
+    @Builder.Default
     private Double coeffEtatique = 1.0;
 
     @Builder.Default

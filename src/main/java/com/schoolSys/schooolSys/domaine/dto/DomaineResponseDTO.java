@@ -15,6 +15,8 @@ public class DomaineResponseDTO {
     private String name;
     private String nameAr;
     private Integer ordre;
+    private Integer ordreEtatique;
+    private Integer ordrePrive;
     private Double coeffEtatique;
     private Double coeffPrive;
     private Boolean versionEtatique;

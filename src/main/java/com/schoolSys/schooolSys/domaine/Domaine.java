@@ -38,6 +38,14 @@ public class Domaine {
     @Builder.Default
     private Integer ordre = 1;
 
+    @Column(name = "ordre_etatique", nullable = false)
+    @Builder.Default
+    private Integer ordreEtatique = 1;
+
+    @Column(name = "ordre_prive", nullable = false)
+    @Builder.Default
+    private Integer ordrePrive = 1;
+
     @Column(name = "coeff_etatique", nullable = false)
     @Builder.Default
     private Double coeffEtatique = 1.0;

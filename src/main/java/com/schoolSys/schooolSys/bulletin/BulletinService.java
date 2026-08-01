@@ -68,10 +68,12 @@ public class BulletinService {
             return Collections.emptyList();
         }
 
-        // 2. Fetch domaines for this niveau, filtered by version
+        // 2. Fetch domaines for this niveau, filtered by version and ordered
+        // by the version-specific display order (étatique vs privé).
         List<Domaine> domaines = domaineRepository.findByNiveauIdOrderByOrdreAsc(niveauId)
                 .stream()
                 .filter(d -> prive ? d.getVersionPrivee() : d.getVersionEtatique())
+                .sorted(Comparator.comparingInt(d -> prive ? d.getOrdrePrive() : d.getOrdreEtatique()))
                 .toList();
         Map<UUID, Domaine> domaineMap = domaines.stream()
                 .collect(Collectors.toMap(Domaine::getId, d -> d));
@@ -275,7 +277,7 @@ public class BulletinService {
                         .domaineId(domaine.getId())
                         .domaineName(domaine.getName())
                         .domaineNameAr(domaine.getNameAr())
-                        .ordre(domaine.getOrdre())
+                        .ordre(prive ? domaine.getOrdrePrive() : domaine.getOrdreEtatique())
                         .coeff(prive ? domaine.getCoeffPrive() : domaine.getCoeffEtatique())
                         .modules(domaineModules)
                         .moyenneDomaine(domaineAvg)

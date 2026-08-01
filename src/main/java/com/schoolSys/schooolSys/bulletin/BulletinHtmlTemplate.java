@@ -27,11 +27,20 @@ final class BulletinHtmlTemplate {
     private static final String TEAL_DARK = "#157d9b";
     private static final String TEAL_LIGHT = "#e8f4f8";
 
+    // Version privée : bleu royal / indigo + en-tête de tableau sombre + zébré.
+    private static final String INDIGO = "#2563eb";
+    private static final String INDIGO_DARK = "#1e40af";
+    private static final String INDIGO_LIGHT = "#dbeafe";
+
     private static final String[] TRIMESTRE_AR = {
             "الثلاثي الأول", "الثلاثي الثاني", "الثلاثي الثالث"
     };
 
     static String render(BulletinDTO b, SchoolSettings settings) {
+        boolean prive = "prive".equalsIgnoreCase(b.getVersion());
+        String PRIMARY = prive ? INDIGO : TEAL;
+        String DARK = prive ? INDIGO_DARK : TEAL_DARK;
+        String LIGHT = prive ? INDIGO_LIGHT : TEAL_LIGHT;
         String trimestreAr = TRIMESTRE_AR[Math.max(0, Math.min(2, b.getTrimestre() - 1))];
         String anneeScolaire = settings != null && settings.getAnneeScolaire() != null
                 ? settings.getAnneeScolaire() : "2025 / 2026";
@@ -55,33 +64,40 @@ final class BulletinHtmlTemplate {
         html.append("@page{size:A4;margin:8mm;}");
         html.append("*{box-sizing:border-box;}");
         html.append("body{font-family:'Amiri',serif;font-size:11px;color:#0a0a0a;margin:0;padding:0;direction:rtl;line-height:1.5;}");
-        html.append(".frame{border:1.5pt solid ").append(TEAL).append(";border-radius:4mm;padding:3mm 4mm;}");
-        html.append(".header{display:table;width:100%;border-bottom:1pt solid ").append(TEAL_LIGHT).append(";padding-bottom:2mm;}");
+        html.append(".frame{border:1.5pt solid ").append(PRIMARY).append(";border-radius:4mm;padding:3mm 4mm;}");
+        html.append(".header{display:table;width:100%;border-bottom:1pt solid ").append(LIGHT).append(";padding-bottom:2mm;}");
         html.append(".header .col{display:table-cell;width:50%;vertical-align:top;}");
         html.append(".header .col.right{text-align:right;}");
         html.append(".header .col.left{text-align:left;}");
         html.append(".title-pill{text-align:center;margin:3mm 0;}");
-        html.append(".title-pill span{display:inline-block;background:").append(TEAL_LIGHT).append(";border:1.5pt solid ").append(TEAL).append(";color:").append(TEAL_DARK).append(";font-weight:700;font-size:15px;padding:1.5mm 12mm;border-radius:5mm;}");
+        html.append(".title-pill span{display:inline-block;background:").append(LIGHT).append(";border:1.5pt solid ").append(PRIMARY).append(";color:").append(DARK).append(";font-weight:700;font-size:15px;padding:1.5mm 12mm;border-radius:5mm;}");
         html.append(".student-info{display:table;width:100%;font-size:11px;margin:1mm 0 3mm 0;}");
         html.append(".student-info .col{display:table-cell;}");
         html.append(".body-row{display:table;width:100%;}");
         html.append(".body-row .main{display:table-cell;vertical-align:top;padding-left:2mm;}");
         html.append(".body-row .side{display:table-cell;vertical-align:top;width:55mm;}");
-        html.append(".domaine{border:1pt solid ").append(TEAL).append(";border-radius:2mm;overflow:hidden;margin-bottom:3mm;}");
-        html.append(".domaine-title{background:").append(TEAL).append(";color:#fff;text-align:center;font-weight:700;font-size:12.5px;padding:1.2mm 2mm;}");
+        html.append(".domaine{border:1pt solid ").append(PRIMARY).append(";border-radius:2mm;overflow:hidden;margin-bottom:3mm;}");
+        html.append(".domaine-title{background:").append(PRIMARY).append(";color:#fff;text-align:center;font-weight:700;font-size:12.5px;padding:1.2mm 2mm;}");
         html.append("table.domaine-table{width:100%;border-collapse:collapse;font-size:10px;background:#fff;}");
-        html.append("table.domaine-table th{background:").append(TEAL_LIGHT).append(";color:").append(TEAL_DARK).append(";padding:1mm 1.5mm;border:0.5pt solid ").append(TEAL).append(";font-weight:700;}");
-        html.append("table.domaine-table td{padding:1.2mm 1.5mm;border:0.5pt solid ").append(TEAL).append(";vertical-align:middle;}");
+        if (prive) {
+            // Privée : en-tête sombre + lignes zébrées
+            html.append("table.domaine-table th{background:").append(PRIMARY).append(";color:#fff;padding:1mm 1.5mm;border:0.5pt solid ").append(PRIMARY).append(";font-weight:700;}");
+            html.append("table.domaine-table td{padding:1.2mm 1.5mm;border:0.5pt solid ").append(LIGHT).append(";vertical-align:middle;}");
+            html.append("table.domaine-table tr:nth-child(even) td{background:#f8fafc;}");
+        } else {
+            html.append("table.domaine-table th{background:").append(LIGHT).append(";color:").append(DARK).append(";padding:1mm 1.5mm;border:0.5pt solid ").append(PRIMARY).append(";font-weight:700;}");
+            html.append("table.domaine-table td{padding:1.2mm 1.5mm;border:0.5pt solid ").append(PRIMARY).append(";vertical-align:middle;}");
+        }
         html.append("table.domaine-table td.center{text-align:center;}");
-        html.append("table.domaine-table td.matiere{font-weight:600;color:").append(TEAL_DARK).append(";}");
+        html.append("table.domaine-table td.matiere{font-weight:600;color:").append(DARK).append(";}");
         html.append("table.domaine-table td.moyenne{text-align:center;font-weight:700;font-size:13px;background:#fafafa;}");
-        html.append(".sd-row td{background:#f4fafc;font-weight:700;color:").append(TEAL_DARK).append(";font-size:10.5px;}");
+        html.append(".sd-row td{background:").append(prive ? INDIGO_LIGHT : "#f4fafc").append(";font-weight:700;color:").append(DARK).append(";font-size:10.5px;}");
         html.append(".stat-cards{display:table;width:100%;margin-bottom:2mm;}");
-        html.append(".stat-cards .card{display:table-cell;width:33%;border:1pt solid ").append(TEAL).append(";border-radius:1.5mm;background:").append(TEAL_LIGHT).append(";text-align:center;padding:1.5mm 0.5mm;}");
-        html.append(".stat-cards .card .label{font-size:9px;color:").append(TEAL_DARK).append(";}");
-        html.append(".stat-cards .card .value{font-size:16px;font-weight:700;color:").append(TEAL_DARK).append(";margin-top:0.5mm;}");
-        html.append(".panel{border:1pt solid ").append(TEAL).append(";border-radius:1.5mm;margin-bottom:2.5mm;background:#fff;}");
-        html.append(".panel-title{background:").append(TEAL_LIGHT).append(";color:").append(TEAL_DARK).append(";font-size:10px;font-weight:700;padding:1mm 2mm;border-bottom:0.5pt solid ").append(TEAL).append(";}");
+        html.append(".stat-cards .card{display:table-cell;width:33%;border:1pt solid ").append(PRIMARY).append(";border-radius:1.5mm;background:").append(LIGHT).append(";text-align:center;padding:1.5mm 0.5mm;}");
+        html.append(".stat-cards .card .label{font-size:9px;color:").append(DARK).append(";}");
+        html.append(".stat-cards .card .value{font-size:16px;font-weight:700;color:").append(DARK).append(";margin-top:0.5mm;}");
+        html.append(".panel{border:1pt solid ").append(PRIMARY).append(";border-radius:1.5mm;margin-bottom:2.5mm;background:#fff;}");
+        html.append(".panel-title{background:").append(LIGHT).append(";color:").append(DARK).append(";font-size:10px;font-weight:700;padding:1mm 2mm;border-bottom:0.5pt solid ").append(PRIMARY).append(";}");
         html.append(".panel-body{padding:2mm;min-height:18mm;font-size:10.5px;}");
         html.append(".panel-body.center{text-align:center;font-weight:700;font-size:13px;padding:5mm 1mm;}");
         html.append(".dotted{display:inline-block;border-bottom:0.5pt dotted #555;min-width:25mm;padding:0 4mm;}");
@@ -94,7 +110,7 @@ final class BulletinHtmlTemplate {
         // Header
         html.append("<div class=\"header\">");
         html.append("<div class=\"col right\">");
-        html.append("<div style=\"font-size:16px;font-weight:700;color:").append(TEAL_DARK).append(";\">المندوبية الجهوية للتربية</div>");
+        html.append("<div style=\"font-size:16px;font-weight:700;color:").append(DARK).append(";\">المندوبية الجهوية للتربية</div>");
         html.append("<div style=\"margin-top:2mm;\">ب <span class=\"dotted\">").append(escape(delegation)).append("</span></div>");
         html.append("</div>");
         html.append("<div class=\"col left\">");
