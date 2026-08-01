@@ -25,4 +25,5 @@ public class TenantOnboardingRequest {
     private String adminPassword;
     private String plan;
     private String contactPhone;
+    private Integer smsCredits;
 }

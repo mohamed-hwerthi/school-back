@@ -29,7 +29,7 @@ public class CorsConfig {
         if (allowedOrigins.length == 1 && "*".equals(allowedOrigins[0])) {
             config.setAllowedOriginPatterns(List.of("*"));
         } else {
-            config.setAllowedOrigins(Arrays.asList(allowedOrigins));
+            config.setAllowedOriginPatterns(Arrays.asList(allowedOrigins));
         }
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
